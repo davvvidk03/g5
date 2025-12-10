@@ -19,7 +19,7 @@
 | 7  | Design conversation flow diagram            | 🟢 David | ⏳          |              |
 | 8  | Implement intent detection (regex + keywords)         | 🟢 David | ⏳          |              |
 | 9  | Write system prompt + few-shot examples for natural follow-ups | 🟢 David |
-|10  | Integrate OpenAI/Claude API calls with error handling & timeouts | 🟢 David | ⏳          |              |
+|10  | Integrate OpenAI API calls with error handling & timeouts | 🟢 David | ⏳          |              |
 |11  | Add session memory (store user ingredients + selected recipe) | 🟡 Morgan | ⏳          |              |
 |12  | Handle “I don’t have X” → use AI to modify/substitute ingredients | 🟡 Morgan | ⏳          |              |
 |13  | Graceful error handling + friendly fallback messages | 🟡 Morgan | ⏳          |              |
