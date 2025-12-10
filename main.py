@@ -5,7 +5,9 @@ Run: python main.py
 This is the entrypoint for the Recipe Suggestion Helper CLI.
 """
 from src.recipe_helper import parse_ingredients, match_recipes, explain_recipe, suggest_substitute, get_available_diets
+import src.recipe_helper as recipe_helper
 from src.openai_helper import ask_openai
+import argparse
 import os
 import sys
 import json
@@ -23,6 +25,7 @@ def ask_user(prompt: str) -> str:
 
 
 def main():
+    # main() will respect the `recipe_helper.USE_OPENAI` flag set at startup
     print("Hi! I'm your Recipe Suggestion Helper.")
     print()
     
@@ -209,4 +212,37 @@ def main():
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Recipe Suggestion Helper CLI")
+    parser.add_argument('--use-openai', action='store_true', help='Enable OpenAI-powered substitution suggestions when API key is present')
+    parser.add_argument('--openai-model', default=None, help='OpenAI model name to use (overrides default in helper)')
+    args = parser.parse_args()
+
+    # Set recipe helper toggle according to CLI flag. The helper will still require OPENAI_API_KEY.
+    try:
+        recipe_helper.USE_OPENAI = bool(args.use_openai)
+        # Set model override on the recipe helper module (None means helper default)
+        recipe_helper.OPENAI_MODEL = args.openai_model if args.openai_model else None
+    except Exception:
+        pass
+
+    # Informational message about OpenAI availability
+    api_key = os.getenv('OPENAI_API_KEY')
+    # Check whether the openai package appears importable
+    try:
+        import openai as _openai  # noqa: F401
+        openai_available = True
+    except Exception:
+        openai_available = False
+
+    print(f"OpenAI client available: {openai_available}")
+    print(f"OPENAI_API_KEY set: {'Yes' if api_key else 'No'}")
+    print(f"OpenAI substitutions requested: {args.use_openai}")
+    model_display = args.openai_model or '(helper default)'
+    print(f"OpenAI model: {model_display}")
+
+    if args.use_openai and not api_key:
+        print("--use-openai requested but OPENAI_API_KEY not set. Falling back to offline substitutions.")
+    if args.use_openai and not openai_available:
+        print("--use-openai requested but OpenAI client library is not installed. Falling back to offline substitutions.")
+
     main()

@@ -7,9 +7,21 @@ Ingredients:
  - chickpeas
  - egg
 
+Allergens:
+ - egg
+ - milk
+
 Steps:
  - Prepare the cheese and other ingredients.
  - Cook asparagus, tomato until ready.
  - Combine ingredients and serve.
 
 Time: 25 minutes
+
+Nutrition (rough estimate):
+ - Calories: 739
+ - Protein: 43g
+ - Carbs: 50g
+ - Fat: 42.3g
+
+(Nutrition estimates are best-effort and should NOT be used for medical/diet purposes.)

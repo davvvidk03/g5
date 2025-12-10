@@ -24,6 +24,18 @@ RECIPES_PATH = os.path.join(BASE, "recipes.json")
 with open(RECIPES_PATH, "r", encoding="utf-8") as f:
     RECIPES = json.load(f)
 
+# Optional OpenAI helper for richer substitution suggestions.
+try:
+    from src.openai_helper import ask_openai  # type: ignore
+except Exception:
+    ask_openai = None
+
+# Toggle to allow using OpenAI for richer suggestions. Main CLI can set this.
+USE_OPENAI = True
+
+# Optional override for OpenAI model name (set by CLI). If None, openai_helper uses its default.
+OPENAI_MODEL: str | None = None
+
 
 def normalize(text: str) -> str:
     """Normalize text for case-insensitive matching.
@@ -169,6 +181,40 @@ def suggest_substitute(ingredient: str) -> str:
         Suggestion string or "I don't have a suggestion for that ingredient"
     """
     k = normalize(ingredient)
+
+    # If OpenAI helper is available and USE_OPENAI is True, ask it for richer substitutes.
+    if ask_openai and globals().get("USE_OPENAI", False):
+        try:
+            # Build a compact recipe-like context to pass to the model.
+            recipe_ctx = {
+                "title": "substitution_helper",
+                "ingredients": [ingredient],
+                "steps": [],
+                "time": "N/A",
+                "diets": [],
+            }
+            prompt = f"Suggest 2-3 concise substitutes for the ingredient '{ingredient}'. For each, give a one-line note about when to use it. If none, say you have no suggestion."
+            # Respect module-level OPENAI_MODEL when provided; otherwise let helper use its default.
+            if globals().get("OPENAI_MODEL"):
+                resp = ask_openai(
+                    prompt,
+                    recipe_ctx,
+                    system_prompt="You are a concise cooking assistant that suggests ingredient substitutions.",
+                    model=globals().get("OPENAI_MODEL"),
+                )
+            else:
+                resp = ask_openai(
+                    prompt,
+                    recipe_ctx,
+                    system_prompt="You are a concise cooking assistant that suggests ingredient substitutions.",
+                )
+            if resp:
+                return resp
+        except Exception:
+            # If any error occurs, fall back to the built-in map below
+            pass
+
+    # Fallback to built-in substitution map
     return SUBSTITUTIONS.get(k, "I don't have a suggestion for that ingredient")
 
 
