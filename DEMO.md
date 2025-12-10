@@ -76,7 +76,7 @@ I don't have a good substitute suggestion for that.
 You can try: oil
 ```
 
-**Talking point (David):** "We built simple intent detection using regex and keyword matching. The bot recognizes questions about time, substitutions, and steps. For richer answers, we can plug in OpenAI, but it works fully offline right now."
+**Talking point (David):** "We built simple intent detection using regex and keyword matching. The bot recognizes questions about time, substitutions, and steps. For richer answers, we  plug in OpenAI.
 
 ---
 
