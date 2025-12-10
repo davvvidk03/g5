@@ -302,9 +302,9 @@ For issues, feature requests, or feedback:
 
 ## 👥 Team
 
-- **Desiree** (🔵) – Repo setup, CLI framework, README v1.0
+- **David** (🟢) – Repo setup, CLI framework, README v1.0
 - **Katie** (🔴) – Recipe database, UI/output formatting, demo video
-- **David** (🟢) – Conversation flow, intent detection, architecture diagrams
+- **Desiree** (🔵) – Conversation flow, intent detection, architecture diagrams
 - **Morgan** (🟡) – Testing, error handling, ethics & bias documentation
 
 ---
