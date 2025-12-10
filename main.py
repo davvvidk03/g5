@@ -40,7 +40,7 @@ def main():
     ing_text = ask_user("What ingredients do you have?")
     ingredients = parse_ingredients(ing_text)
     if not ingredients:
-        print("I didn't hear any ingredients. Exiting.")
+        print("Sorry -- ingredients needed to make a meal. Exiting.")
         sys.exit(0)
 
     matches = match_recipes(ingredients, min_match=2, diet=diet_filter)
@@ -48,7 +48,7 @@ def main():
         print("Sorry, I couldn't find recipes matching at least 2 of your ingredients")
         if diet_filter:
             print(f"with the '{diet_filter}' dietary requirement.")
-        print("Try adding more ingredients or removing dietary filters.")
+        print("Please add more ingredients or remove2 dietary filters.")
         sys.exit(0)
 
     print("Great! Here are some recipes you can make:")
