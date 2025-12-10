@@ -1,11 +1,11 @@
 id,task,owner,status,github_issue,labels,assignees
-1,Create GitHub repo + initial README + .gitignore,Desiree,Done,,docs,
+1,Create GitHub repo + initial README + .gitignore,David,Done,,docs,
 2,Set up Python venv + dependencies (openai/anthropic; dotenv; rich/click),Desiree,In Progress,,infra,
 3,Build basic CLI loop (welcome -> input -> response -> repeat/exit),Desiree,In Progress,,backend,
 4,Create recipes.json with ~12 common recipes (title; ingredients; steps; tags),Katie,In Progress,,data,
 5,Write recipe matcher (user must have >=2 required ingredients),Katie,In Progress,,backend,
 6,Pretty-print 2-3 recipe suggestions in terminal (Rich tables or cards),Katie,In Progress,,ui,
-7,Design conversation flow diagram (Mermaid),David,In Progress,,design,
+7,Design conversation flow diagram (Mermaid),Desiree,In Progress,,design,
 8,Implement intent detection (regex + keywords),David,In Progress,,backend,
 9,Write system prompt + few-shot examples for natural follow-ups,David,In Progress,,prompt,
 10,Integrate OpenAI/Claude API calls with error handling & timeouts,David,In Progress,,backend,
