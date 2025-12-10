@@ -2,7 +2,7 @@
 **AIEG F25 Capstone Project**
 
 ## 🎯 Quick Pitch
-A conversational CLI chatbot that helps users discover recipes based on ingredients they have at home. Users tell it what's in their pantry, get 2–3 suggestions, and ask follow-up questions about preparation, cooking time, and ingredient substitutions.
+A conversational CLI chatbot that helps users solve the universal issue of "What should I eat?!" Recipes are based on ingredients they have at home. Users will enter 3 or more ingredients, get 2–3 suggestions, and ask follow-up questions about preparation, cooking time, and ingredient substitutions.  The recipes can also be catered to certain allergies or diestary restrictions.
 
 ---
 
