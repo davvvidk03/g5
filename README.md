@@ -51,7 +51,7 @@ python main.py
 
 **Example Conversation:**
 ```
-Hi! I'm your Recipe Suggestion Helper.
+Hi! I'm your Recipe Helper.
 Available dietary options: halal, kosher, pescatarian, vegan, vegetarian
 Do you have any dietary preferences? (or press Enter to skip)
 > vegan
