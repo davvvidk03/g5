@@ -215,6 +215,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Recipe Suggestion Helper CLI")
     parser.add_argument('--use-openai', action='store_true', help='Enable OpenAI-powered substitution suggestions when API key is present')
     parser.add_argument('--openai-model', default=None, help='OpenAI model name to use (overrides default in helper)')
+    parser.add_argument('--openai-json', action='store_true', help='Return machine-readable JSON for substitution responses')
     args = parser.parse_args()
 
     # Set recipe helper toggle according to CLI flag. The helper will still require OPENAI_API_KEY.
@@ -222,6 +223,8 @@ if __name__ == '__main__':
         recipe_helper.USE_OPENAI = bool(args.use_openai)
         # Set model override on the recipe helper module (None means helper default)
         recipe_helper.OPENAI_MODEL = args.openai_model if args.openai_model else None
+        # Set JSON output toggle
+        recipe_helper.OPENAI_JSON = bool(args.openai_json)
     except Exception:
         pass
 
@@ -239,6 +242,11 @@ if __name__ == '__main__':
     print(f"OpenAI substitutions requested: {args.use_openai}")
     model_display = args.openai_model or '(helper default)'
     print(f"OpenAI model: {model_display}")
+
+    if args.openai_json:
+        print("OpenAI JSON output requested: Yes")
+    else:
+        print("OpenAI JSON output requested: No")
 
     if args.use_openai and not api_key:
         print("--use-openai requested but OPENAI_API_KEY not set. Falling back to offline substitutions.")

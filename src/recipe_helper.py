@@ -35,6 +35,8 @@ USE_OPENAI = True
 
 # Optional override for OpenAI model name (set by CLI). If None, openai_helper uses its default.
 OPENAI_MODEL: str | None = None
+# When True, substitution responses should be machine-readable JSON.
+OPENAI_JSON: bool = False
 
 
 def normalize(text: str) -> str:
@@ -193,7 +195,15 @@ def suggest_substitute(ingredient: str) -> str:
                 "time": "N/A",
                 "diets": [],
             }
-            prompt = f"Suggest 2-3 concise substitutes for the ingredient '{ingredient}'. For each, give a one-line note about when to use it. If none, say you have no suggestion."
+            # Request structured JSON output for easier parsing:
+            # {"suggestions": [{"name": "...", "note": "..."}, ...]}
+            prompt = (
+                f"You are a concise cooking assistant."
+                f"Suggest 2-3 concise substitutes for the ingredient '{ingredient}'."
+                "Return ONLY valid JSON in this exact shape:"
+                "{\"suggestions\": [{\"name\": \"<substitute>\", \"note\": \"<one-line-note>\"}, ...]}"
+                "If you have no suggestion, return: {\"suggestions\": []}."
+            )
             # Respect module-level OPENAI_MODEL when provided; otherwise let helper use its default.
             if globals().get("OPENAI_MODEL"):
                 resp = ask_openai(
@@ -208,14 +218,64 @@ def suggest_substitute(ingredient: str) -> str:
                     recipe_ctx,
                     system_prompt="You are a concise cooking assistant that suggests ingredient substitutions.",
                 )
-            if resp:
-                return resp
+                if resp:
+                    # Try to extract JSON from the response. The model is instructed to return
+                    # only JSON, but some models may add markdown fences; strip them.
+                    import json, re
+
+                    text = resp.strip()
+                    # Remove triple-backtick fences if present
+                    text = re.sub(r"^```(?:json)?\s*", "", text, flags=re.IGNORECASE)
+                    text = re.sub(r"\s*```$", "", text)
+
+                    try:
+                        payload = json.loads(text)
+                        # Accept either {'suggestions': [...]} or a direct list
+                        suggestions = []
+                        if isinstance(payload, dict) and "suggestions" in payload and isinstance(payload["suggestions"], list):
+                            suggestions = payload["suggestions"]
+                        elif isinstance(payload, list):
+                            suggestions = payload
+                    except Exception:
+                        # If parsing fails, create a single suggestion entry from raw text
+                        suggestions = [{"name": text, "note": "from model (unstructured)"}]
+
+                    # If JSON output was requested, always return machine-readable JSON schema
+                    if globals().get("OPENAI_JSON", False):
+                        import json as _json
+                        return _json.dumps({"suggestions": suggestions})
+
+                    # Otherwise, format into a readable multi-line string for the CLI
+                    if suggestions:
+                        lines = []
+                        for s in suggestions:
+                            name = s.get("name") if isinstance(s, dict) else str(s)
+                            note = s.get("note") if isinstance(s, dict) else ""
+                            if note:
+                                lines.append(f"- {name}: {note}")
+                            else:
+                                lines.append(f"- {name}")
+                        return "\n".join(lines)
+                    else:
+                        return "I don't have a suggestion for that ingredient"
         except Exception:
             # If any error occurs, fall back to the built-in map below
             pass
 
     # Fallback to built-in substitution map
-    return SUBSTITUTIONS.get(k, "I don't have a suggestion for that ingredient")
+    fallback = SUBSTITUTIONS.get(k)
+    if globals().get("OPENAI_JSON", False):
+        # Return machine-readable JSON for integrations
+        import json
+
+        suggestions = []
+        if fallback:
+            # provide a generic note when using built-in map
+            suggestions.append({"name": fallback if isinstance(fallback, str) else str(fallback), "note": "built-in fallback suggestion"})
+        # If no built-in suggestion, return empty list
+        return json.dumps({"suggestions": suggestions})
+
+    return fallback if fallback is not None else "I don't have a suggestion for that ingredient"
 
 
 def find_recipe_by_title_or_index(query: str) -> Dict[str, Any]:
