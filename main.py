@@ -5,8 +5,17 @@ Run: python main.py
 This is the entrypoint for the Recipe Suggestion Helper CLI.
 """
 from src.recipe_helper import parse_ingredients, match_recipes, explain_recipe, suggest_substitute, get_available_diets
+from src.openai_helper import ask_openai
 import os
 import sys
+import json
+import re
+from datetime import datetime
+
+
+def _safe_filename(title: str) -> str:
+    # make a simple safe filename from title
+    return re.sub(r"[^0-9a-zA-Z_-]", "_", title).strip("_")
 
 
 def ask_user(prompt: str) -> str:
@@ -73,6 +82,65 @@ def main():
         if q.lower() in ("exit", "quit", "no"):
             print("Bye — happy cooking!")
             break
+        # New: handle confirmation flow
+        if "want to make this" in q.lower() or q.lower().strip() == "want to make this":
+            # Show shopping list vs available ingredients
+            have = [i.lower() for i in ingredients]
+            recipe_ings = selected.get("ingredients", [])
+            missing = [ing for ing in recipe_ings if ing.lower() not in have]
+            print("\nGreat — preparing this recipe for you.")
+            print("Shopping list:")
+            for ing in recipe_ings:
+                mark = "(have)" if ing.lower() in have else "(missing)"
+                print(f" - {ing} {mark}")
+
+            # Estimate cost (very rough heuristic)
+            est_cost = round(len(recipe_ings) * 1.75, 2)
+            print(f"Estimated cost (rough): ${est_cost}")
+
+            # Offer to save recipe and write a printable recipe card
+            save = ask_user("Save this recipe to your saved list and create a recipe card? (y/n)")
+            if save.lower() in ("y", "yes"):
+                saved_path = os.path.join("saved_recipes.json")
+                try:
+                    if os.path.exists(saved_path):
+                        with open(saved_path, "r", encoding="utf-8") as f:
+                            saved = json.load(f)
+                    else:
+                        saved = []
+                except Exception:
+                    saved = []
+                entry = {"title": selected.get("title"), "saved_at": datetime.utcnow().isoformat()}
+                saved.append(entry)
+                with open(saved_path, "w", encoding="utf-8") as f:
+                    json.dump(saved, f, indent=2)
+                # create a simple recipe card file
+                card_dir = os.path.join("saved_cards")
+                os.makedirs(card_dir, exist_ok=True)
+                fname = _safe_filename(selected.get("title", "recipe")) + ".txt"
+                card_path = os.path.join(card_dir, fname)
+                with open(card_path, "w", encoding="utf-8") as f:
+                    f.write(f"{selected.get('title')}\n")
+                    f.write("Ingredients:\n")
+                    for ing in recipe_ings:
+                        f.write(f" - {ing}\n")
+                    f.write("\nSteps:\n")
+                    for step in selected.get("steps", []):
+                        f.write(f" - {step}\n")
+                    f.write(f"\nTime: {selected.get('time')}\n")
+                print(f"Saved to {saved_path} and created recipe card at {card_path}")
+
+            # Timers suggestion based on recipe time
+            t = selected.get("time", "")
+            m = re.search(r"(\d+)", t)
+            if m:
+                total = int(m.group(1))
+                prep = max(5, total // 4)
+                cook = max(5, total - prep)
+                print(f"Suggested timers: prep ~{prep} minutes, cook ~{cook} minutes (total {total} minutes)")
+            else:
+                print("Suggested timers: prep ~10 minutes, cook ~15 minutes")
+            continue
         if "i don't have" in q.lower() or "dont have" in q.lower():
             part = q.lower().split("have", 1)[-1].strip()
             sub = suggest_substitute(part)
@@ -86,7 +154,18 @@ def main():
         if "steps" in q.lower() or "how do i" in q.lower():
             print(explain_recipe(selected))
             continue
-        print("Sorry — I can answer substitution and time questions. For richer answers, set OPENAI_API_KEY and use the main project with OpenAI integration.")
+        # Try OpenAI for richer free-form follow-ups when configured
+        openai_answer = None
+        try:
+            openai_answer = ask_openai(q, selected)
+        except Exception:
+            openai_answer = None
+
+        if openai_answer:
+            print(openai_answer)
+            continue
+
+        print("Sorry — I can answer substitution and time questions. For richer answers, set OPENAI_API_KEY and run again.")
 
 
 if __name__ == '__main__':
