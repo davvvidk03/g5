@@ -63,9 +63,9 @@
     "time": "10 minutes",
     "meal_type": "lunch",
     "diets": "vegetarian",
-    "tags": "Golden, crispy grilled cheese”
+    "tags": "Golden, crispy grilled cheese.”
     ]
-},
+  },
   {
     "title": "Egg Salad Sandwich",
     "ingredients": ["eggs", "mayonnaise", "bread", "salt", "pepper"],
@@ -138,5 +138,5 @@
     ]
   }
 ]
-]
+
 
