@@ -1,4 +1,3 @@
-
 [
   {
     "title": "Peanut Butter Banana Toast",
@@ -62,8 +61,14 @@
     "ingredients": ["bread", "cheese", "butter"],
     "time": "10 minutes",
     "meal_type": "lunch",
-    "diets": "vegetarian",
-    "tags": "Golden, crispy grilled cheese.”
+    "diets": ["vegetarian"],
+    "tags": "Golden, crispy grilled cheese.",
+    "steps": [
+      "Butter one side of each bread slice.",
+      "Place one slice butter-side down in a pan and add cheese.",
+      "Top with the second slice, butter-side up.",
+      "Cook until the bottom is golden, then flip.",
+      "Cook until the cheese is melted and the second side is golden."
     ]
   },
   {
@@ -80,27 +85,27 @@
       "Top with another slice and serve."
     ]
   },
-    {
-  "title": "Veggie Wrap",
-  "ingredients": ["tortilla", "lettuce", "tomato", "cucumber", "hummus"],
-  "time": "10 minutes",
-  "meal_type": "lunch",
-  "diets": ["vegan", "diabetic-friendly"],
-  "tags": "A fresh veggie wrap filled with crisp vegetables and creamy hummus.",
-  "steps": [
-    "Lay the tortilla flat on a plate.",
-    "Spread a generous layer of hummus over the tortilla.",
-    "Add chopped lettuce, sliced tomato, and sliced cucumber.",
-    "Roll the tortilla tightly into a wrap.",
-    "Slice in half and serve."
-  ]
-},
+  {
+    "title": "Veggie Wrap",
+    "ingredients": ["tortilla", "lettuce", "tomato", "cucumber", "hummus"],
+    "time": "10 minutes",
+    "meal_type": "lunch",
+    "diets": ["vegan", "diabetic-friendly"],
+    "tags": "A fresh veggie wrap filled with crisp vegetables and creamy hummus.",
+    "steps": [
+      "Lay the tortilla flat on a plate.",
+      "Spread a generous layer of hummus over the tortilla.",
+      "Add chopped lettuce, sliced tomato, and sliced cucumber.",
+      "Roll the tortilla tightly into a wrap.",
+      "Slice in half and serve."
+    ]
+  },
   {
     "title": "Rice and Beans Bowl",
     "ingredients": ["rice", "black beans", "onion", "garlic", "olive oil"],
     "time": "25 minutes",
     "meal_type": "dinner",
-    "diets":  ["vegan", "diabetic-friendly"],
+    "diets": ["vegan", "diabetic-friendly"],
     "tags": "A hearty bowl of rice and seasoned beans using pantry staples.",
     "steps": [
       "Cook the rice according to package instructions.",
@@ -128,7 +133,7 @@
     "ingredients": ["pasta", "butter", "garlic", "salt", "pepper"],
     "time": "25 minutes",
     "meal_type": "dinner",
-    "diets": "vegetarian",
+    "diets": ["vegetarian"],
     "tags": "Simple pasta tossed in garlic butter for a comforting dinner.",
     "steps": [
       "Cook the pasta in salted water until tender.",
@@ -138,5 +143,3 @@
     ]
   }
 ]
-
-
