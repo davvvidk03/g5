@@ -1,4 +1,4 @@
-# Demo Walkthrough – Recipe Suggestion Helper
+# Demo Walkthrough – Recipe Helper
 
 ## 🎬 Demo Flow (4–6 Minutes)
 
@@ -10,7 +10,7 @@
 
 **Bot output:**
 ```
-Hi! I'm your Recipe Suggestion Helper.
+Hi! I'm your Recipe Helper.
 Available dietary options: halal, kosher, pescatarian, vegan, vegetarian
 Do you have any dietary preferences? (or press Enter to skip)
 ```
