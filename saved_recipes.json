@@ -31,5 +31,27 @@
       "soy",
       "gluten"
     ]
+  },
+  {
+    "title": "Chicken & Rice Bowl",
+    "saved_at": "2025-12-12T01:21:23.592930",
+    "allergens": [
+      "soy"
+    ]
+  },
+  {
+    "title": "Chicken Delight",
+    "saved_at": "2025-12-12T02:48:35.483144",
+    "allergens": [
+      "milk"
+    ]
+  },
+  {
+    "title": "Fish and Rice Casserole",
+    "saved_at": "2025-12-12T03:10:01.134957",
+    "allergens": [
+      "fish",
+      "dairy"
+    ]
   }
 ]

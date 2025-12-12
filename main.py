@@ -4,6 +4,11 @@ Run: python main.py
 
 This is the entrypoint for the Recipe Suggestion Helper CLI.
 """
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 from src.recipe_helper import parse_ingredients, match_recipes, explain_recipe, suggest_substitute, get_available_diets
 from src.openai_helper import ask_openai, generate_recipes_from_ingredients
 import os
@@ -11,11 +16,7 @@ import sys
 import json
 import re
 from datetime import datetime
-from rich import print
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv() 
+from rich import print 
 
 
 def _safe_filename(title: str) -> str:
@@ -27,18 +28,47 @@ def ask_user(prompt: str) -> str:
     return input(prompt + "\n> ").strip()
 
 
+def _mask_key(key: str) -> str:
+    if not key:
+        return ""
+    if len(key) <= 8:
+        return key[0] + "*" * (len(key) - 1)
+    return f"{key[:4]}" + "*" * (len(key) - 8) + f"{key[-4:]}"
+
+
+def _get_arg_value(args, flag: str, default: int) -> int:
+    """Parse integer CLI flag values like --max-results=5 or --max=5."""
+    for a in args:
+        if a.startswith(flag + "="):
+            try:
+                return int(a.split("=", 1)[1])
+            except ValueError:
+                return default
+    return default
+
+
 def main():
+    # support quick check: `python main.py --show-key`
+    if "--show-key" in sys.argv:
+        key = os.getenv("GROQ_API_KEY")
+        if key:
+            print(f"GROQ_API_KEY={_mask_key(key)}")
+        else:
+            print("GROQ_API_KEY is not set")
+        return
+
+    max_results = _get_arg_value(sys.argv, "--max-results", default=5)
+    max_results = _get_arg_value(sys.argv, "--max", default=max_results)
+    allow_ai = "--no-ai" not in sys.argv
+
     print("[bold underline blue]Hi! I'm your Recipe Suggestion Helper.[/bold underline blue]")
     print()
-
 
     # Ask about meal type
     available_meal_types = ["breakfast", "snack", "lunch", "dinner"]
     print(f"[cyan]Available meal types: {', '.join(available_meal_types)}[/cyan]")
     meal_choice = ask_user("What type of meal is this? (or press Enter to skip)")
     meal_type = meal_choice.strip() if meal_choice.strip() else None
-    
-    print()
     
     # Ask about dietary preferences
     available_diets = get_available_diets()
@@ -54,41 +84,45 @@ def main():
         print("[pink1]I didn't hear any ingredients. Exiting.[/pink1]")
         sys.exit(0)
 
-    # Try ChatGPT first with all user inputs (meal_type, diet, ingredients)
-    print("[cyan]Generating recipes for you...[/cyan]")
-    recipes = None
-    using_chatgpt = False
-    try:
-        recipes = generate_recipes_from_ingredients(ingredients, diet=diet_filter, meal_type=meal_type)
-        if recipes:
-            using_chatgpt = True
-    except:
-        pass
-    
-    # Fall back to JSON recipe matching if ChatGPT unavailable
-    if not recipes:
-        print("[yellow]ChatGPT unavailable, searching recipe database...[/yellow]")
-        matches = match_recipes(ingredients, min_match=2, diet=diet_filter)
-        if not matches:
-            print("[pink1]Sorry, I couldn't find recipes matching at least 2 of your ingredients[/pink1]")
-            if diet_filter:
-                print(f"[pink1]with the '{diet_filter}' dietary requirement.[/pink1]")
-            print("[cyan]Try adding more ingredients or removing dietary filters.[/cyan]")
-            sys.exit(0)
-        # Convert to list of recipes for consistent handling
-        recipes = [r for r, count in matches]
-        match_counts = {r.get('title'): count for r, count in matches}
+    # Local recipe matches first
+    matches = match_recipes(ingredients, min_match=2, diet=diet_filter)
+    options = [(r, count, "local") for r, count in matches[:max_results]]
 
-    print("[cyan]Great! Here are some recipes you can make:[/cyan]")
-    if using_chatgpt:
-        for i, r in enumerate(recipes[:3], 1):
-            diets_str = f" — {', '.join(r.get('diets', []))}" if r.get('diets') else ""
-            print(f"{i}. {r.get('title')} ({r.get('time')}){diets_str}")
-    else:
-        for i, r in enumerate(recipes[:3], 1):
-            count = match_counts.get(r.get('title'), 0)
-            diets_str = f" — {', '.join(r.get('diets', []))}" if r.get('diets') else ""
-            print(f"{i}. {r.get('title')} ({r.get('time')}){diets_str} — matches {count} ingredient(s)")
+    # If we need more options, auto-generate with OpenAI (if allowed and key present)
+    if allow_ai and len(options) < max_results:
+        print(f"[yellow]Generating {max_results - len(options)} more recipe(s) with AI...[/yellow]")
+        print("[dim](This may take a few seconds, especially during high API usage)[/dim]")
+        ai_recipes = generate_recipes_from_ingredients(
+            ingredients=ingredients,
+            diet=diet_filter,
+            meal_type=meal_type,
+        )
+        if ai_recipes:
+            print(f"[green]✓ Generated {len(ai_recipes)} AI recipe(s)[/green]")
+            for r in ai_recipes:
+                options.append((r, None, "ai"))
+                if len(options) >= max_results:
+                    break
+        else:
+            print("[pink1]⚠ AI recipe generation was unavailable.[/pink1]")
+            print("[dim]This may be due to rate limits or network issues. Showing local matches only.[/dim]")
+
+    if not options:
+        print("[pink1]Sorry, I couldn't find recipes matching at least 2 of your ingredients[/pink1]")
+        if diet_filter:
+            print(f"[pink1]with the '{diet_filter}' dietary requirement.[/pink1]")
+        if allow_ai:
+            print("[cyan]Try again with AI generation enabled and a valid GROQ_API_KEY.[/cyan]")
+        else:
+            print("[cyan]Try adding more ingredients or removing dietary filters.[/cyan]")
+        sys.exit(0)
+
+    print(f"[cyan]Great! Here are up to {len(options)} recipe options:[/cyan]")
+    for i, (r, count, source) in enumerate(options, 1):
+        diets_str = f" — {', '.join(r.get('diets', []))}" if r.get('diets') else ""
+        match_note = f" — matches {count} ingredient(s)" if count is not None else ""
+        src_note = "[AI]" if source == "ai" else "[local]"
+        print(f"{i}. {r.get('title')} ({r.get('time', 'time n/a')}){diets_str} {src_note}{match_note}")
 
     choice = ask_user("Which number would you like to know more about, or type a recipe name? (or 'no' to exit)")
     if choice.lower() in ('no', 'n', 'exit', 'quit'):
@@ -98,10 +132,9 @@ def main():
     selected = None
     if choice.isdigit():
         idx = int(choice) - 1
-        if 0 <= idx < len(recipes[:3]):
-            selected = recipes[idx]
-    if not selected and not using_chatgpt:
-        # Only allow name lookup when using JSON database
+        if 0 <= idx < len(options):
+            selected = options[idx][0]
+    if not selected:
         from src.recipe_helper import find_recipe_by_title_or_index
         r = find_recipe_by_title_or_index(choice)
         if r:
@@ -243,7 +276,7 @@ def main():
             print(openai_answer)
             continue
 
-        print("Sorry — I can answer substitution and time questions. For richer answers, set OPENAI_API_KEY and run again.")
+        print("Sorry — I can answer substitution and time questions. For richer answers, set GROQ_API_KEY and run again.")
 
 
 if __name__ == '__main__':

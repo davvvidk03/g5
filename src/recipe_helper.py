@@ -147,20 +147,54 @@ def explain_recipe(recipe: Dict[str, Any]) -> str:
 # Each entry: missing_ingredient -> suggested_alternative
 # Includes culturally-appropriate swaps (e.g., tofu/lentils for meat)
 SUBSTITUTIONS = {
-    "butter": "oil",
-    "milk": "plant milk or water",
-    "egg": "mashed banana or applesauce (for baking)",
-    "sour cream": "yogurt",
-    "cream": "milk",
-    "broth": "water + seasoning",
-    "chicken": "tofu or chickpeas",
-    "beef": "lentils or mushrooms",
-    "fish": "tofu or beans",
+    "butter": "oil or margarine",
+    "milk": "plant milk (almond, soy, oat) or water",
+    "egg": "mashed banana, applesauce (for baking), or flax egg (1 tbsp flaxseed + 3 tbsp water)",
+    "eggs": "mashed banana, applesauce (for baking), or flax egg (1 tbsp flaxseed + 3 tbsp water per egg)",
+    "sour cream": "plain yogurt or greek yogurt",
+    "cream": "milk with butter, or coconut cream",
+    "heavy cream": "half-and-half with butter, or coconut cream",
+    "broth": "water + bouillon cube, or water + soy sauce",
+    "chicken broth": "vegetable broth or water + seasoning",
+    "beef broth": "mushroom broth or vegetable broth",
+    "chicken": "tofu, tempeh, chickpeas, or seitan",
+    "beef": "lentils, mushrooms, or textured vegetable protein (TVP)",
+    "pork": "tofu, tempeh, or mushrooms",
+    "fish": "tofu, hearts of palm, or white beans",
+    "shrimp": "hearts of palm or chickpeas",
+    "bacon": "coconut bacon, tempeh bacon, or smoked paprika",
+    "cheese": "nutritional yeast, cashew cream, or vegan cheese",
+    "parmesan": "nutritional yeast or vegan parmesan",
+    "yogurt": "coconut yogurt, soy yogurt, or sour cream",
+    "sugar": "honey, maple syrup, or coconut sugar",
+    "brown sugar": "white sugar + molasses, or coconut sugar",
+    "flour": "all-purpose flour, whole wheat flour, or gluten-free flour blend",
+    "bread crumbs": "crushed crackers, panko, or rolled oats",
+    "mayonnaise": "greek yogurt, sour cream, or avocado",
+    "soy sauce": "tamari (gluten-free) or coconut aminos",
+    "wine": "broth + vinegar, or grape juice",
+    "vinegar": "lemon juice or lime juice",
+    "lemon juice": "vinegar or lime juice",
+    "garlic": "garlic powder (1/8 tsp per clove) or shallots",
+    "onion": "shallots, leeks, or onion powder",
+    "tomato paste": "ketchup or tomato sauce (reduce liquid)",
+    "cornstarch": "flour (use 2x amount) or arrowroot powder",
+    "baking powder": "1/4 tsp baking soda + 1/2 tsp cream of tartar",
+    "buttermilk": "milk + 1 tbsp vinegar or lemon juice (let sit 5 min)",
+    "honey": "maple syrup, agave nectar, or sugar",
+    "maple syrup": "honey, agave nectar, or corn syrup",
+    "olive oil": "vegetable oil, canola oil, or avocado oil",
+    "vegetable oil": "canola oil, olive oil, or melted butter",
+    "coconut milk": "regular milk with coconut extract, or cashew cream",
+    "ginger": "ground ginger (1/4 tsp per 1 tbsp fresh)",
+    "cilantro": "parsley or culantro",
+    "parsley": "cilantro or basil",
+    "basil": "oregano or thyme",
 }
 
 
 def suggest_substitute(ingredient: str) -> str:
-    """Suggest an alternative ingredient.
+    """Suggest an alternative ingredient with smart matching.
     
     Args:
         ingredient: Missing ingredient name
@@ -169,7 +203,26 @@ def suggest_substitute(ingredient: str) -> str:
         Suggestion string or "I don't have a suggestion for that ingredient"
     """
     k = normalize(ingredient)
-    return SUBSTITUTIONS.get(k, "I don't have a suggestion for that ingredient")
+    
+    # Direct match
+    if k in SUBSTITUTIONS:
+        return f"Try using: {SUBSTITUTIONS[k]}"
+    
+    # Try removing common suffixes for plural handling
+    if k.endswith('s') and k[:-1] in SUBSTITUTIONS:
+        return f"Try using: {SUBSTITUTIONS[k[:-1]]}"
+    
+    # Try adding 's' for plural match
+    if k + 's' in SUBSTITUTIONS:
+        return f"Try using: {SUBSTITUTIONS[k + 's']}"
+    
+    # Partial match - find ingredients that contain or are contained in the query
+    for key, value in SUBSTITUTIONS.items():
+        if k in key or key in k:
+            return f"Try using: {value}"
+    
+    # No match found
+    return f"I don't have a suggestion for '{ingredient}'. Try searching online for '{ingredient} substitute'"
 
 
 def find_recipe_by_title_or_index(query: str) -> Dict[str, Any]:
