@@ -105,7 +105,7 @@ def main():
                 if len(options) >= max_results:
                     break
         else:
-            print("[pink1]⚠ Recipe generation was unavailable.[/pink1]")
+            print("[pink1]⚠ Reecipe generation was unavailable.[/pink1]")
             print("[dim]This may be due to rate limits or network issues. Showing local matches only.[/dim]")
 
     if not options:
@@ -122,8 +122,7 @@ def main():
     for i, (r, count, source) in enumerate(options, 1):
         diets_str = f" — {', '.join(r.get('diets', []))}" if r.get('diets') else ""
         match_note = f" — matches {count} ingredient(s)" if count is not None else ""
-        src_note = "[AI]" if source == "ai" else "[local]"
-        print(f"{i}. {r.get('title')} ({r.get('time', 'time n/a')}){diets_str} {src_note}{match_note}")
+        print(f"{i}. {r.get('title')} ({r.get('time', 'time n/a')}){diets_str}{match_note}")
 
     choice = ask_user("Which number would you like to know more about, or type a recipe name? (or 'no' to exit)")
     if choice.lower() in ('no', 'n', 'exit', 'quit'):
