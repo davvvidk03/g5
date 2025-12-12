@@ -15,13 +15,6 @@ If we add optional logging (e.g., `history.log`):
 - Include a clear privacy notice in the CLI
 - Provide option to delete logs: `--clear-history` flag
 
-### OpenAI Integration (Optional)
-If OpenAI API is enabled (via `OPENAI_API_KEY`):
-- API calls include the recipe context and user questions
-- Review OpenAI's [privacy policy](https://openai.com/privacy/)
-- Consider if this meets your data governance needs
-- **Recommendation:** Disable in environments handling sensitive dietary info
-
 ---
 
 ## 🚨 Potential Biases
