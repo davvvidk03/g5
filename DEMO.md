@@ -223,11 +223,6 @@ Great! Here are some recipes you can make:
 ### Why JSON for Recipes?
 "JSON is human-readable and easy to update. No database setup required. Perfect for a hackathon-style project."
 
-### Why No API Key Required?
-"We built the core logic to work offline. Users can test immediately without API setup. OpenAI integration is a future enhancement."
-
-### Why Simple Substitutions Instead of AI?
-"For a 4-6 minute demo, built-in substitutions are reliable. AI could hallucinate wrong advice. We opted for safety."
 
 ---
 
