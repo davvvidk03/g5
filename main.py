@@ -78,12 +78,20 @@ def main():
     diet_filter = diet_choice.strip() if diet_choice.strip() else None
     
     print()
-    print("[cyan]Tell me what ingredients you have (comma-separated). Example: 'chicken, rice, broccoli'[/cyan]")
-    ing_text = ask_user("What ingredients do you have?")
-    ingredients = parse_ingredients(ing_text)
-    if not ingredients:
-        print("[pink1]I didn't hear any ingredients. Exiting.[/pink1]")
-        sys.exit(0)
+    print("[cyan]Tell me at least 3 ingredients you have (comma-separated). Example: 'chicken, rice, broccoli'[/cyan]")
+    
+    # Keep asking until user provides 3+ ingredients
+    ingredients = []
+    while len(ingredients) < 3:
+        ing_text = ask_user("What ingredients do you have?")
+        ingredients = parse_ingredients(ing_text)
+        
+        if not ingredients:
+            print("[pink1]Please enter at least one ingredient.[/pink1]")
+        elif len(ingredients) < 3:
+            print(f"[pink1]I need at least 3 ingredients. You've entered {len(ingredients)}. Please add more.[/pink1]")
+        else:
+            print(f"[green]Great! You've entered {len(ingredients)} ingredients.[/green]")
 
     # Local recipe matches first
     matches = match_recipes(ingredients, min_match=2, diet=diet_filter)

@@ -25,6 +25,19 @@ with open(RECIPES_PATH, "r", encoding="utf-8") as f:
     RECIPES = json.load(f)
 
 
+# Build set of all known ingredients from recipe database
+def _get_valid_ingredients() -> set:
+    """Extract all ingredients from recipe database for validation."""
+    valid = set()
+    for recipe in RECIPES:
+        for ing in recipe.get("ingredients", []):
+            valid.add(normalize(ing))
+    return valid
+
+
+VALID_INGREDIENTS = _get_valid_ingredients()
+
+
 def normalize(text: str) -> str:
     """Normalize text for case-insensitive matching.
     
@@ -264,4 +277,34 @@ def get_available_diets() -> List[str]:
     for r in RECIPES:
         diets.update(r.get("diets", []))
     return sorted(list(diets))
+
+
+def validate_ingredients(ingredients: List[str]) -> Tuple[List[str], List[str]]:
+    """Validate user ingredients against known ingredients in database.
+    
+    Performs substring matching to catch variations (e.g., "soba" matches "soba noodles").
+    
+    Args:
+        ingredients: List of user-provided ingredients
+        
+    Returns:
+        Tuple of (valid_ingredients, invalid_ingredients)
+    """
+    valid = []
+    invalid = []
+    
+    for ing in ingredients:
+        ing_norm = normalize(ing)
+        # Check for exact match or substring match
+        found = False
+        for known_ing in VALID_INGREDIENTS:
+            if ing_norm == known_ing or ing_norm in known_ing or known_ing in ing_norm:
+                valid.append(ing)
+                found = True
+                break
+        
+        if not found:
+            invalid.append(ing)
+    
+    return valid, invalid
 
